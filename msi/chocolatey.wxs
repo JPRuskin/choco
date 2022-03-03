@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding='utf-8'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi' xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Product Name="$(var.ProductName)" Id="*" UpgradeCode="$(var.ProductCode)" Language="1033" Manufacturer="$(var.ProductVendor)" Codepage="1252" Version="$(var.ProductVersion)">
+    <Package Id='*' Platform='x64' Keywords='Installer' Description="$(var.ProductName)" Comments="$(var.ProductSummary)" InstallScope="perMachine" InstallerVersion="200" Compressed="yes" />
+    <Media Id="1" Cabinet="$(var.ProductName).cab" EmbedCab="yes" />
+
+    <Icon Id="chocolatey.ico" SourceFile="$(var.InstallerIco)" /> <!-- Need a higher quality icon -->
+    <Property Id="ARPPRODUCTICON" Value="chocolatey.ico" />
+
+    <!-- Installation Properties -->
+
+    <Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />      <!-- Remove modify -->
+
+    <!-- Could also bundle a chain install for NET 4.0+ -->
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED" />
+    <Condition Message="This application requires .NET Framework 4.0. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED]]>
+    </Condition>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="CommonAppDataFolder" Name="ProgramData">
+        <Directory Id="INSTALLDIR" Name="chocolatey" FileSource="chocolateyInstall" >
+          <Component Id="MainExecutable" Guid="{5ABEE285-37A7-47C4-A697-4F4AB5C8880A}">
+            <File Id="ChocoEXE" Name="choco.exe" DiskId="1" KeyPath="yes" Checksum="yes" />
+            <File Id="ChocoIgnore" Name="choco.exe.ignore" DiskId="1" />
+            <File Id="ChocoManifest" Name="choco.exe.manifest" DiskId="1" />
+            <File Id="ChocoCredits" Name="CREDITS.txt" DiskId="1" />
+            <File Id="ChocoLicense" Name="LICENSE.txt" DiskId="1" />
+          </Component>
+          <Directory Id="LibDirectory" Name="lib">
+            <Directory Id="LibChocolateyDirectory" Name="chocolatey">
+              <Component Id="ChocolateyInstalledNupkg" Guid="" >
+                <File Id="ChocolateyNupkg" Name="chocolatey.nupkg" DiskId="1" Source="$(var.NUPKG)" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="HelpersDirectory" Name="helpers" FileSource="chocolateyInstall\helpers" >
+            <Component Id="Helpers" Guid="{0BA3FA78-BB8C-4334-AAB0-A2562217D325}">
+              <File Id="ChocolateyinstallerPsm1" Name="chocolateyInstaller.psm1" DiskId="1" KeyPath="yes" />
+              <File Id="ChocolateyprofilePsm1" Name="chocolateyProfile.psm1" DiskId="1" />
+              <File Id="ChocolateyscriptrunnerPs1" Name="chocolateyScriptRunner.ps1" DiskId="1" />
+              <File Id="ChocolateytabexpansionPs1" Name="ChocolateyTabExpansion.ps1" DiskId="1" />
+            </Component>
+            <Directory Id="HelperFunctionsDirectory" Name="functions" FileSource="chocolateyInstall\helpers\functions" >
+              <Component Id="HelperFunctions" Guid="{0B8B6C34-FB46-4E27-811D-B95B7DB6C84E}">
+                <File Id="FormatFilesizePs1" Name="Format-FileSize.ps1" DiskId="1" />
+                <File Id="GetChecksumvalidPs1" Name="Get-CheckSumValid.ps1" DiskId="1" />
+                <File Id="GetChocolateyunzipPs1" Name="Get-ChocolateyUnzip.ps1" DiskId="1" />
+                <File Id="GetChocolateywebfilePs1" Name="Get-ChocolateyWebFile.ps1" DiskId="1" />
+                <File Id="GetEnvironmentvariablePs1" Name="Get-EnvironmentVariable.ps1" DiskId="1" />
+                <File Id="GetEnvironmentvariablenamesPs1" Name="Get-EnvironmentVariableNames.ps1" DiskId="1" />
+                <File Id="GetFtpfilePs1" Name="Get-FtpFile.ps1" DiskId="1" />
+                <File Id="GetOsarchitecturewidthPs1" Name="Get-OSArchitectureWidth.ps1" DiskId="1" />
+                <File Id="GetPackageparametersPs1" Name="Get-PackageParameters.ps1" DiskId="1" />
+                <File Id="GetToolslocationPs1" Name="Get-ToolsLocation.ps1" DiskId="1" />
+                <File Id="GetUacenabledPs1" Name="Get-UACEnabled.ps1" DiskId="1" />
+                <File Id="GetUninstallregistrykeyPs1" Name="Get-UninstallRegistryKey.ps1" DiskId="1" />
+                <File Id="GetViruscheckvalidPs1" Name="Get-VirusCheckValid.ps1" DiskId="1" />
+                <File Id="GetWebfilePs1" Name="Get-WebFile.ps1" DiskId="1" />
+                <File Id="GetWebfilenamePs1" Name="Get-WebFileName.ps1" DiskId="1" />
+                <File Id="GetWebheadersPs1" Name="Get-WebHeaders.ps1" DiskId="1" />
+                <File Id="InstallBinfilePs1" Name="Install-BinFile.ps1" DiskId="1" />
+                <File Id="InstallChocolateydesktoplinkPs1" Name="Install-ChocolateyDesktopLink.ps1" DiskId="1" />
+                <File Id="InstallChocolateyenvironmentvariablePs1" Name="Install-ChocolateyEnvironmentVariable.ps1" DiskId="1" />
+                <File Id="InstallChocolateyexplorermenuitemPs1" Name="Install-ChocolateyExplorerMenuItem.ps1" DiskId="1" />
+                <File Id="InstallChocolateyfileassociationPs1" Name="Install-ChocolateyFileAssociation.ps1" DiskId="1" />
+                <File Id="InstallChocolateyinstallpackagePs1" Name="Install-ChocolateyInstallPackage.ps1" DiskId="1" />
+                <File Id="InstallChocolateypackagePs1" Name="Install-ChocolateyPackage.ps1" DiskId="1" KeyPath="yes" />
+                <File Id="InstallChocolateypathPs1" Name="Install-ChocolateyPath.ps1" DiskId="1" />
+                <File Id="InstallChocolateypinnedtaskbaritemPs1" Name="Install-ChocolateyPinnedTaskBarItem.ps1" DiskId="1" />
+                <File Id="InstallChocolateypowershellcommandPs1" Name="Install-ChocolateyPowershellCommand.ps1" DiskId="1" />
+                <File Id="InstallChocolateyshortcutPs1" Name="Install-ChocolateyShortcut.ps1" DiskId="1" />
+                <File Id="InstallChocolateyvsixpackagePs1" Name="Install-ChocolateyVsixPackage.ps1" DiskId="1" />
+                <File Id="InstallChocolateyzippackagePs1" Name="Install-ChocolateyZipPackage.ps1" DiskId="1" />
+                <File Id="InstallVsixPs1" Name="Install-Vsix.ps1" DiskId="1" />
+                <File Id="SetEnvironmentvariablePs1" Name="Set-EnvironmentVariable.ps1" DiskId="1" />
+                <File Id="SetPowershellexitcodePs1" Name="Set-PowerShellExitCode.ps1" DiskId="1" />
+                <File Id="StartChocolateyprocessasadminPs1" Name="Start-ChocolateyProcessAsAdmin.ps1" DiskId="1" />
+                <File Id="TestProcessadminrightsPs1" Name="Test-ProcessAdminRights.ps1" DiskId="1" />
+                <File Id="UninstallBinfilePs1" Name="Uninstall-BinFile.ps1" DiskId="1" />
+                <File Id="UninstallChocolateyenvironmentvariablePs1" Name="Uninstall-ChocolateyEnvironmentVariable.ps1" DiskId="1" />
+                <File Id="UninstallChocolateypackagePs1" Name="Uninstall-ChocolateyPackage.ps1" DiskId="1" />
+                <File Id="UninstallChocolateyzippackagePs1" Name="UnInstall-ChocolateyZipPackage.ps1" DiskId="1" />
+                <File Id="UpdateSessionenvironmentPs1" Name="Update-SessionEnvironment.ps1" DiskId="1" />
+                <File Id="WriteChocolateyfailurePs1" Name="Write-ChocolateyFailure.ps1" DiskId="1" />
+                <File Id="WriteChocolateysuccessPs1" Name="Write-ChocolateySuccess.ps1" DiskId="1" />
+                <File Id="WriteFileupdatelogPs1" Name="Write-FileUpdateLog.ps1" DiskId="1" />
+                <File Id="WriteFunctioncalllogmessagePs1" Name="Write-FunctionCallLogMessage.ps1" DiskId="1" />
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Id="RedirectsDirectory" Name="redirects" FileSource="chocolateyInstall\redirects">
+            <Component Id="Redirects" Guid="{9E63CAE7-12F2-4D76-AE4D-4BEBCB209A24}">
+              <File Id="ChocoExeShim" Name="choco.exe" DiskId="1" KeyPath="yes" />
+              <File Id="ChocoExeShimIgnore" Name="choco.exe.ignore" DiskId="1" />
+              <File Id="ChocolateyExe" Name="chocolatey.exe" DiskId="1" />
+              <File Id="ChocolateyExeIgnore" Name="chocolatey.exe.ignore" DiskId="1" />
+              <File Id="CinstExe" Name="cinst.exe" DiskId="1" />
+              <File Id="CinstExeIgnore" Name="cinst.exe.ignore" DiskId="1" />
+              <File Id="ClistExe" Name="clist.exe" DiskId="1" />
+              <File Id="ClistExeIgnore" Name="clist.exe.ignore" DiskId="1" />
+              <File Id="CpackExe" Name="cpack.exe" DiskId="1" />
+              <File Id="CpackExeIgnore" Name="cpack.exe.ignore" DiskId="1" />
+              <File Id="CpushExe" Name="cpush.exe" DiskId="1" />
+              <File Id="CpushExeIgnore" Name="cpush.exe.ignore" DiskId="1" />
+              <File Id="CuninstExe" Name="cuninst.exe" DiskId="1" />
+              <File Id="CuninstExeIgnore" Name="cuninst.exe.ignore" DiskId="1" />
+              <File Id="CupExe" Name="cup.exe" DiskId="1" />
+              <File Id="CupExeIgnore" Name="cup.exe.ignore" DiskId="1" />
+              <File Id="CverExe" Name="cver.exe" DiskId="1" />
+              <File Id="CverExeIgnore" Name="cver.exe.ignore" DiskId="1" />
+              <File Id="RefreshenvCmd" Name="RefreshEnv.cmd" DiskId="1" />
+            </Component>
+          </Directory>
+          <Directory Id="ToolsDirectory" Name="tools" FileSource="chocolateyInstall\tools" >
+            <!-- Underscore in ID as IDs must begin with "letter or underscore" -->
+            <Component Id="_7zip" Guid="{F3A66C5D-8C6D-4E7F-9BC3-DD25CB3B1D3D}">
+              <File Id="_7zDll" Name="7z.dll" DiskId="1" Checksum="yes" />
+              <File Id="_7zDllManifest" Name="7z.dll.manifest" DiskId="1" />
+              <File Id="_7zExe" Name="7z.exe" DiskId="1" KeyPath="yes" Checksum="yes" />
+              <File Id="_7zExeIgnore" Name="7z.exe.ignore" DiskId="1" />
+              <File Id="_7zExeManifest" Name="7z.exe.manifest" DiskId="1" />
+              <File Id="_7zipLicenseTxt" Name="7zip.license.txt" DiskId="1" />
+            </Component>
+            <Component Id="Checksum" Guid="{1032E3F6-2BEB-4F9D-89D9-A47C14B39AE3}">
+              <File Id="ChecksumExe" Name="checksum.exe" DiskId="1" KeyPath="yes" Checksum="yes" />
+              <File Id="ChecksumExeConfig" Name="checksum.exe.config" DiskId="1" />
+              <File Id="ChecksumExeIgnore" Name="checksum.exe.ignore" DiskId="1" />
+              <File Id="ChecksumLicenseTxt" Name="checksum.license.txt" DiskId="1" />
+            </Component>
+            <Component Id="Shimgen" Guid="{E080E29D-A8F3-41D7-8F95-30135AED54C8}">
+              <File Id="ShimgenExe" Name="shimgen.exe" DiskId="1" KeyPath="yes" Checksum="yes" />
+              <File Id="ShimgenExeIgnore" Name="shimgen.exe.ignore" DiskId="1" />
+              <File Id="ShimgenLicenseTxt" Name="shimgen.license.txt" DiskId="1" />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Feature Id="Complete" Title="Chocolatey" Description="$(var.ProductSummary)" Display="expand" Level="1" ConfigurableDirectory="INSTALLDIR">
+      <Feature Id="Choco" Title="Chocolatey" Description="A Description" Level="1">
+        <ComponentRef Id="MainExecutable" />
+        <ComponentRef Id="ChocolateyInstalledNupkg" />
+        <ComponentRef Id="Helpers" />
+        <ComponentRef Id="HelperFunctions" />
+        <ComponentRef Id="Redirects" />
+        <ComponentRef Id="_7zip" />
+        <ComponentRef Id="Checksum" />
+        <ComponentRef Id="Shimgen" />
+      </Feature>
+    </Feature>
+
+    <SetProperty Id="InitializeChocolatey" Before="InitializeChocolatey" Sequence="execute" Value="&quot;[INSTALLDIR]choco.exe&quot; --version" />
+    <CustomAction Id="InitializeChocolatey" BinaryKey="WixCA" DllEntry="WixQuietExec" Execute="deferred" Return="check" Impersonate="no" />
+
+    <InstallExecuteSequence>
+      <Custom Action="InitializeChocolatey" After="InstallFiles"><![CDATA[NOT Installed]]></Custom>
+    </InstallExecuteSequence>
+  </Product>
+</Wix>
