@@ -30,6 +30,18 @@ namespace chocolatey.infrastructure.licensing
 
         public static ChocolateyLicense Validate()
         {
+            var licenseFile = ApplicationParameters.LicenseFileLocation;
+            var userLicenseFile = ApplicationParameters.UserLicenseFileLocation;
+            if (File.Exists(userLicenseFile))
+            {
+                licenseFile = userLicenseFile;
+            }
+
+            return Validate(licenseFile);
+        }
+
+        public static ChocolateyLicense Validate(string licenseFile)
+        {
             var chocolateyLicense = new ChocolateyLicense
             {
                 LicenseType = ChocolateyLicenseType.Unknown,
@@ -39,13 +51,6 @@ namespace chocolatey.infrastructure.licensing
             var regularLogOutput = ShouldLogErrorsToConsole();
             var normalLogger = regularLogOutput ? ChocolateyLoggers.Normal : ChocolateyLoggers.LogFileOnly;
             var importantLogger = regularLogOutput ? ChocolateyLoggers.Important : ChocolateyLoggers.LogFileOnly;
-
-            var licenseFile = ApplicationParameters.LicenseFileLocation;
-            var userLicenseFile = ApplicationParameters.UserLicenseFileLocation;
-            if (File.Exists(userLicenseFile))
-            {
-                licenseFile = userLicenseFile;
-            }
 
             // no IFileSystem at this point
             if (!File.Exists(licenseFile))
