@@ -1,4 +1,4 @@
-﻿// Copyright © 2017 - 2025 Chocolatey Software, Inc
+// Copyright © 2017 - 2025 Chocolatey Software, Inc
 // Copyright © 2011 - 2017 RealDimensions Software, LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@ namespace chocolatey.infrastructure.app.domain
     public enum LicenseCommandType
     {
         Unknown,
-        Info
+        Info,
+        Set
     }
 }

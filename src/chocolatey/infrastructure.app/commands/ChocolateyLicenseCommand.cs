@@ -28,14 +28,18 @@ using System.Text.RegularExpressions;
 
 namespace chocolatey.infrastructure.app.commands
 {
-    [CommandFor("license", "Retrieve Chocolatey License information", Version = "2.5.0")]
+    [CommandFor("license", "Manipulate the Chocolatey License", Version = "2.5.0")]
     public class ChocolateyLicenseCommand : ChocolateyCommandBase, ICommand
     {
         private static readonly Regex _licenseCountRegex = new Regex(@"\[.*?(?<licensedMachineCount>\d+).*?\]");
 
         public void ConfigureArgumentParser(OptionSet optionSet, ChocolateyConfiguration configuration)
         {
-            // We don't currently expect to have any arguments
+            optionSet
+                .Add("n=|name=",
+                     "Name - the name of the package. Required with some actions. Defaults to empty.",
+                     option => configuration.PinCommand.Name = option.UnquoteSafe())
+                ;
         }
 
         public void ParseAdditionalArguments(IList<string> unparsedArguments, ChocolateyConfiguration configuration)
@@ -60,16 +64,30 @@ namespace chocolatey.infrastructure.app.commands
             }
 
             configuration.LicenseCommand.Command = command;
+
+            // First non-switch argument that is not a name=value pair will be treated as the license to test or install.
+            configuration.Input = unparsedArguments.DefaultIfEmpty(string.Empty).FirstOrDefault(arg => !arg.StartsWith("-") && !arg.ContainsSafe("="));
         }
 
         public void Validate(ChocolateyConfiguration configuration)
         {
-            // We don't currently accept any arguments, so there is no validation
+            if (configuration.Input != string.Empty)
+            {
+                // Test the existence of the file
+            }
         }
 
-        public bool MayRequireAdminAccess()
+        public bool MayRequireAdminAccess(ChocolateyConfiguration config)
         {
-            return false;
+            var requiresAdmin = false;
+            switch (config.LicenseCommand.Command)
+            {
+                case LicenseCommandType.Info:
+                    requiresAdmin = false;
+                case LicenseCommandType.Set:
+                    requiresAdmin = true;
+            }
+            return requiresAdmin;
         }
 
         public void DryRun(ChocolateyConfiguration configuration)
@@ -84,12 +102,23 @@ namespace chocolatey.infrastructure.app.commands
                 case LicenseCommandType.Info:
                     GetLicense(config);
                     break;
+                case LicenseCommandType.Set:
+                    SetLicense(config);
+                    break;
             }
         }
 
         private void GetLicense(ChocolateyConfiguration config)
         {
-            var ourLicense = LicenseValidation.Validate();
+            var ourLicense = new ChocolateyLicense();
+            if (config.Input != string.Empty)
+            {
+                ourLicense = LicenseValidation.Validate(config.Input);
+            }
+            else
+            {
+                ourLicense = LicenseValidation.Validate();
+            }
             var logger = config.RegularOutput ? ChocolateyLoggers.Normal : ChocolateyLoggers.LogFileOnly;
 
             if (ourLicense.LicenseType == ChocolateyLicenseType.Foss || ourLicense.LicenseType == ChocolateyLicenseType.Unknown)
@@ -118,6 +147,25 @@ namespace chocolatey.infrastructure.app.commands
             {
                 // Headers: Name, LicenseType, ExpirationDate, NodeCount
                 this.Log().Info("{0}|{1}|{2}|{3}".FormatWith(ourLicense.Name, ourLicense.LicenseType, ourLicense.ExpirationDate?.ToString("yyyy-MM-dd"), nodeCount));
+            }
+        }
+
+        private void SetLicense(ChocolateyConfiguration config)
+        {
+            var licensePath = config.Input;
+            var newLicense = LicenseValidation.Validate(licensePath);
+
+            var logger = config.RegularOutput ? ChocolateyLoggers.Normal : ChocolateyLoggers.LogFileOnly;
+
+            if (newLicense.IsValid)
+            {
+                this.Log().Info(logger, "Installing the new license for Chocolatey {0}: {1}", newLicense.LicenseType, licensePath);
+                System.IO.File.Copy(licensePath, ApplicationParameters.LicenseFileLocation, true);
+            }
+            else
+            {
+                this.Log().Warn(logger, "The provided license is an invalid license for Chocolatey {0}: {1}", newLicense.LicenseType, newLicense.InvalidReason);
+                Environment.ExitCode = 1;
             }
         }
 
