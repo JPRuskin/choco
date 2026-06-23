@@ -1179,7 +1179,24 @@ Please see https://docs.chocolatey.org/en-us/troubleshooting for more
 
             config.CreateBackup();
 
-            foreach (var packageName in config.PackageNames.Split(new[] { ApplicationParameters.PackageNamesSeparator }, StringSplitOptions.RemoveEmptyEntries).OrEmpty())
+            var packagesToUpgrade = config.PackageNames.Split(new[] { ApplicationParameters.PackageNamesSeparator }, StringSplitOptions.RemoveEmptyEntries).OrEmpty();
+
+            // #3834: Sort upgradable packages to ensure Chocolatey packages will not upgrade in a 'bad' order
+            packagesToUpgrade.OrderBy(p => 
+                p == "chocolateygui.extension" ? 0 :
+                p == "chocolateygui" ? 1 :
+                p == "chocolatey-agent" ? 2 :
+                p == "chocolatey.extension" ? 3 :
+                p == "chocolatey" ? 4 : 5)
+            .ThenBy(s => s)
+            .ToList();
+            // Questions for Gary:
+            // - Is this the right place for this, or is there something further down that alphabetises?
+            // - It would probably make sense to have this as a method, for testing, but that increases the PR complexity
+            //    - That might be easier to override in extension, though, for...
+            // - Would there be a way to have an OSS order _and_ an order for the C4B packages in extension?
+
+            foreach (var packageName in packagesToUpgrade)
             {
                 if (packageResultsToReturn.ContainsKey(packageName))
                 {
